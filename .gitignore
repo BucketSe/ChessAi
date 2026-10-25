@@ -1,0 +1,14 @@
+# Build output
+build/
+dist/
+engine/build/
+*.exe
+*.o
+
+# Bundled engines are downloaded/built by build.py
+app/engines/
+
+# Python
+__pycache__/
+*.pyc
+*.spec
