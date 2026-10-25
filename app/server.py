@@ -21,6 +21,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 BUNDLE = pathlib.Path(getattr(sys, "_MEIPASS", ROOT))
 STATIC = BUNDLE / "static"
 EXE = ".exe" if sys.platform == "win32" else ""
+CPUS = os.cpu_count() or 2
 
 
 def _find(*candidates):
@@ -31,7 +32,7 @@ ENGINE_SPECS = {
     "stockfish": {
         "label": "Stockfish 19",
         "path": _find(BUNDLE / "engines" / f"stockfish{EXE}"),
-        "options": {"Threads": max(1, (os.cpu_count() or 2) // 2), "Hash": 256},
+        "options": {"Threads": max(1, CPUS // 2), "Hash": 256},
     },
     "chessai": {
         "label": "ChessAi",
@@ -54,7 +55,7 @@ class Engine:
 
     def __init__(self, path, options):
         self.path = path
-        self.options = options
+        self.options = dict(options)  # currently applied UCI options
         self.lock = threading.Lock()        # one search at a time
         self.write_lock = threading.Lock()  # guards stdin
         self.busy = False
@@ -86,7 +87,7 @@ class Engine:
             if line.startswith(prefix):
                 return line.strip()
 
-    def analyze(self, fen, movetime_ms, multipv):
+    def analyze(self, fen, movetime_ms, multipv, options=None):
         if self.busy:
             try:
                 self._send("stop")
@@ -95,6 +96,13 @@ class Engine:
         with self.lock:
             if self.proc.poll() is not None:
                 self._start()
+            changed = {k: v for k, v in (options or {}).items() if self.options.get(k) != v}
+            if changed:
+                for name, value in changed.items():
+                    self._send(f"setoption name {name} value {value}")
+                self.options.update(changed)
+                self._send("isready")  # resizing the hash table can take a moment
+                self._read_until("readyok")
             self._send(f"setoption name MultiPV value {multipv}")
             self._send(f"position fen {fen}")
             self._send(f"go movetime {movetime_ms}")
@@ -184,7 +192,8 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/engines":
             available = [{"id": k, "label": v["label"]} for k, v in ENGINE_SPECS.items() if v["path"].exists()]
-            return self._json(200, {"engines": available, "default": DEFAULT_ENGINE})
+            return self._json(200, {"engines": available, "default": DEFAULT_ENGINE, "cpus": CPUS,
+                                    "defaultThreads": ENGINE_SPECS["stockfish"]["options"]["Threads"]})
         super().do_GET()
 
     def do_POST(self):
@@ -198,14 +207,20 @@ class Handler(SimpleHTTPRequestHandler):
             movetime = max(100, min(int(body.get("movetime", 2000)), 60_000))
             multipv = max(1, min(int(body.get("multipv", 3)), 5))
             engine = str(body.get("engine", DEFAULT_ENGINE))
+            threads = int(body.get("threads", 0))  # 0 = engine default
+            hash_mb = int(body.get("hash", 0))
         except (ValueError, TypeError):
             return self._json(400, {"error": "bad request"})
         if not valid_fen(fen):
             return self._json(400, {"error": "invalid FEN"})
         if engine not in ENGINE_SPECS or not ENGINE_SPECS[engine]["path"].exists():
             return self._json(400, {"error": f"engine '{engine}' is not available"})
+        defaults = ENGINE_SPECS[engine]["options"]
+        options = {"Hash": max(16, min(hash_mb, 4096)) if hash_mb else defaults["Hash"]}
+        if "Threads" in defaults:  # ChessAi is single-threaded
+            options["Threads"] = max(1, min(threads, CPUS)) if threads else defaults["Threads"]
         try:
-            result = get_engine(engine).analyze(fen, movetime, multipv)
+            result = get_engine(engine).analyze(fen, movetime, multipv, options)
         except (RuntimeError, OSError) as e:
             return self._json(500, {"error": str(e)})
         result["engine"] = ENGINE_SPECS[engine]["label"]

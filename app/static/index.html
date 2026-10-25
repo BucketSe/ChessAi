@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="amethyst" data-board="amethyst">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ChessAi Analysis</title>
-  <link rel="icon" href="pieces/wN.svg">
+  <link rel="icon" href="pieces/cburnett/wN.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -15,13 +15,18 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logo"><img src="pieces/wN.svg" alt=""></div>
+      <div class="logo"><img src="pieces/cburnett/wN.svg" alt=""></div>
       <div>
         <div class="brand-name">ChessAi</div>
         <div class="brand-sub">Analysis board</div>
       </div>
     </div>
-    <div class="status-pill" id="engineStatus"><span class="dot"></span><span class="label">Connecting…</span></div>
+    <div class="topbar-right">
+      <div class="status-pill" id="engineStatus"><span class="dot"></span><span class="label">Connecting…</span></div>
+      <button class="icon-btn" id="settingsBtn" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
   </header>
 
   <main class="layout">
@@ -30,6 +35,9 @@
       <div class="board-head">
         <div class="turn" id="turnLabel">White to move</div>
         <div class="board-tools">
+          <button class="icon-btn" id="editBtn" title="Board editor">
+            <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+          </button>
           <button class="icon-btn" id="flipBtn" title="Flip board (F)">
             <svg viewBox="0 0 24 24"><path d="M7 4v13m0 0-3-3m3 3 3-3M17 20V7m0 0-3 3m3-3 3 3"/></svg>
           </button>
@@ -48,12 +56,40 @@
           <svg class="arrows" id="arrows" viewBox="0 0 8 8" preserveAspectRatio="none"></svg>
         </div>
       </div>
-      <div class="nav">
+
+      <div class="nav" id="nav">
         <button class="icon-btn" data-nav="first" title="Start"><svg viewBox="0 0 24 24"><path d="M6 5v14M18 6l-7 6 7 6"/></svg></button>
         <button class="icon-btn" data-nav="prev" title="Back (←)"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
         <button class="icon-btn" data-nav="next" title="Forward (→)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
         <button class="icon-btn" data-nav="last" title="End"><svg viewBox="0 0 24 24"><path d="M18 5v14M6 6l7 6-7 6"/></svg></button>
         <button class="icon-btn" id="undoBtn" title="Take back last move"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+      </div>
+
+      <!-- Board editor -->
+      <div class="editor" id="editor" hidden>
+        <div class="palette" id="palette"></div>
+        <div class="editor-row">
+          <div class="segmented" id="editSide">
+            <button data-value="w">White to move</button><button data-value="b">Black to move</button>
+          </div>
+          <div class="castle" id="editCastle">
+            <button data-castle="K" title="White can castle kingside">W O-O</button>
+            <button data-castle="Q" title="White can castle queenside">W O-O-O</button>
+            <button data-castle="k" title="Black can castle kingside">B O-O</button>
+            <button data-castle="q" title="Black can castle queenside">B O-O-O</button>
+          </div>
+        </div>
+        <div class="editor-row">
+          <div class="editor-actions">
+            <button class="btn-secondary" id="editStart">Starting position</button>
+            <button class="btn-secondary" id="editClear">Clear board</button>
+          </div>
+          <div class="editor-actions">
+            <button class="btn-ghost" id="editCancel">Cancel</button>
+            <button class="btn-primary compact" id="editDone">Analyze position</button>
+          </div>
+        </div>
+        <div class="hint" id="editHint">Pick a piece, then click or drag across squares to place it. Right-click erases. With the hand tool, drag pieces around or off the board.</div>
       </div>
     </section>
 
@@ -96,7 +132,7 @@
         <div class="lines" id="lines"><div class="empty">Waiting for analysis…</div></div>
       </section>
 
-      <section class="card">
+      <section class="card graph-card">
         <div class="card-title"><span>Evaluation</span><span class="muted-small" id="graphLabel"></span></div>
         <svg class="graph" id="graph" viewBox="0 0 300 90" preserveAspectRatio="none"></svg>
       </section>
@@ -110,30 +146,109 @@
       </section>
 
       <section class="card settings">
-        <div class="setting">
-          <span>Engine</span>
-          <div class="segmented" id="engineSeg"></div>
-        </div>
+        <div class="setting"><span>Engine</span><div class="segmented engine-seg" data-setting="engine"></div></div>
         <div class="setting">
           <span>Think time</span>
-          <div class="segmented" data-setting="movetime">
-            <button data-value="1000">1s</button><button data-value="3000">3s</button><button data-value="10000">10s</button>
-          </div>
-        </div>
-        <div class="setting">
-          <span>Lines</span>
-          <div class="segmented" data-setting="multipv">
-            <button data-value="1">1</button><button data-value="3">3</button><button data-value="5">5</button>
+          <div class="segmented" data-setting="movetime" data-type="number">
+            <button data-value="1000">1s</button><button data-value="3000">3s</button><button data-value="5000">5s</button><button data-value="10000">10s</button>
           </div>
         </div>
         <div class="setting">
           <span>Auto-analyze</span>
-          <button class="toggle" id="autoToggle" role="switch" aria-checked="true"><span></span></button>
+          <button class="toggle" data-setting="auto" role="switch"><span></span></button>
         </div>
-        <button class="btn-secondary wide" id="analyzeBtn">Analyze now</button>
+        <div class="settings-actions">
+          <button class="btn-secondary" id="analyzeBtn">Analyze now</button>
+          <button class="btn-ghost" id="moreSettingsBtn">All settings</button>
+        </div>
       </section>
     </div>
   </main>
+
+  <!-- Settings -->
+  <div class="modal" id="settingsModal" hidden>
+    <div class="modal-card settings-card" role="dialog" aria-label="Settings">
+      <aside class="settings-nav">
+        <div class="settings-title">Settings</div>
+        <button class="tab active" data-tab="appearance">
+          <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A5.6 5.6 0 0 0 22 9.9C22 5.5 17.5 2 12 2z"/></svg>
+          Appearance
+        </button>
+        <button class="tab" data-tab="board">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          Board
+        </button>
+        <button class="tab" data-tab="engine">
+          <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>
+          Engine
+        </button>
+        <button class="tab" data-tab="about">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          About
+        </button>
+      </aside>
+      <div class="settings-body">
+        <button class="icon-btn close-btn" id="settingsClose" title="Close (Esc)"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+
+        <section class="panel" data-panel="appearance">
+          <h3>Theme</h3>
+          <p class="panel-sub">Colors for the whole app.</p>
+          <div class="theme-grid" id="themeGrid" data-setting="theme"></div>
+        </section>
+
+        <section class="panel" data-panel="board" hidden>
+          <h3>Board colors</h3>
+          <div class="board-grid" id="boardGrid" data-setting="board"></div>
+          <h3>Pieces</h3>
+          <div class="piece-grid" id="pieceGrid" data-setting="pieces"></div>
+          <h3>Display</h3>
+          <div class="rows">
+            <div class="row"><div><b>Coordinates</b><span>Files and ranks along the board edge</span></div><button class="toggle" data-setting="coords" role="switch"><span></span></button></div>
+            <div class="row"><div><b>Best-move arrows</b><span>Draw the engine's top moves on the board</span></div><button class="toggle" data-setting="arrows" role="switch"><span></span></button></div>
+            <div class="row"><div><b>Evaluation bar</b><span>Vertical bar next to the board</span></div><button class="toggle" data-setting="evalbar" role="switch"><span></span></button></div>
+            <div class="row"><div><b>Highlight last move</b><span>Tint the squares of the previous move</span></div><button class="toggle" data-setting="lastMove" role="switch"><span></span></button></div>
+            <div class="row"><div><b>Legal move dots</b><span>Show where the selected piece can go</span></div><button class="toggle" data-setting="legalDots" role="switch"><span></span></button></div>
+            <div class="row"><div><b>Evaluation graph</b><span>Show the evaluation chart card</span></div><button class="toggle" data-setting="graph" role="switch"><span></span></button></div>
+          </div>
+        </section>
+
+        <section class="panel" data-panel="engine" hidden>
+          <h3>Engine</h3>
+          <div class="rows">
+            <div class="row"><div><b>Analysis engine</b><span>Stockfish is far stronger; ChessAi is the home-made engine</span></div><div class="segmented engine-seg" data-setting="engine"></div></div>
+            <div class="row"><div><b>Think time</b><span>How long to analyze each position</span></div>
+              <div class="segmented" data-setting="movetime" data-type="number">
+                <button data-value="1000">1s</button><button data-value="3000">3s</button><button data-value="5000">5s</button><button data-value="10000">10s</button><button data-value="30000">30s</button>
+              </div></div>
+            <div class="row"><div><b>Lines</b><span>Number of top moves to show</span></div>
+              <div class="segmented" data-setting="multipv" data-type="number">
+                <button data-value="1">1</button><button data-value="2">2</button><button data-value="3">3</button><button data-value="4">4</button><button data-value="5">5</button>
+              </div></div>
+            <div class="row"><div><b>Auto-analyze</b><span>Analyze automatically after every change</span></div><button class="toggle" data-setting="auto" role="switch"><span></span></button></div>
+          </div>
+          <h3>Performance</h3>
+          <div class="rows">
+            <div class="row"><div><b>CPU threads</b><span id="threadsHelp">More threads = deeper analysis (Stockfish only)</span></div><div class="segmented" id="threadsSeg" data-setting="threads" data-type="number"></div></div>
+            <div class="row"><div><b>Hash memory</b><span>Memory for remembering analyzed positions</span></div>
+              <div class="segmented" data-setting="hash" data-type="number">
+                <button data-value="64">64 MB</button><button data-value="256">256 MB</button><button data-value="1024">1 GB</button>
+              </div></div>
+          </div>
+        </section>
+
+        <section class="panel" data-panel="about" hidden>
+          <div class="about-head">
+            <div class="logo big"><img src="pieces/cburnett/wN.svg" alt=""></div>
+            <div><h3 class="no-margin">ChessAi</h3><span class="panel-sub" id="versionLabel"></span></div>
+          </div>
+          <p class="panel-sub">Analysis powered by Stockfish 19 and the ChessAi engine. Pieces from the lichess project (cburnett, merida, chessnut, spatial, fantasy, mpchess). Open source under GPL-3.0.</p>
+          <div class="rows">
+            <div class="row"><div><b>Reset settings</b><span>Restore every setting to its default</span></div><button class="btn-secondary" id="resetSettingsBtn">Reset</button></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
 
   <div class="modal" id="promoModal" hidden>
     <div class="modal-card">

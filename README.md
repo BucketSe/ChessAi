@@ -15,8 +15,10 @@ Grab **ChessAi.exe** from the [latest release](../../releases/latest) and run it
 - **Best move + top lines** — the engine's best move with an arrow on the board, plus the top 3 or 5 alternatives with their continuations
 - **Enter moves your way** — type `e4 e5 Nf3`, paste a full PGN or a FEN, or move pieces by clicking or dragging
 - **Eval bar and evaluation graph** across the whole game; click the graph to jump to a move
+- **Board editor** — set up any position by placing pieces, choose the side to move and castling rights; illegal setups are caught before analysis
 - **Two engines** — Stockfish 19 (strongest available, ~3600+ Elo) or the home-made ChessAi engine
-- Move list with navigation (← → keys), flip board (F), take back, copy FEN, think time 1s / 3s / 10s
+- **Settings** — 5 app themes (Amethyst, Midnight, Emerald, Sunset, Light), 5 board colors, 6 piece sets, display toggles, think time, number of lines, CPU threads and hash memory
+- Move list with navigation (← → keys), flip board (F), take back, copy FEN
 
 ## Build from source
 
@@ -45,7 +47,7 @@ For development, run the UI in a browser instead: `python app/server.py` (or `st
 
 - [Stockfish](https://stockfishchess.org/) — GPL-3.0, bundled unmodified in release builds
 - [chess.js](https://github.com/jhlywa/chess.js) — BSD-2-Clause, move legality and notation in the UI
-- Piece set "cburnett" by Colin M.L. Burnett — GPLv2+, via [lichess](https://github.com/lichess-org/lila)
+- Piece sets via [lichess](https://github.com/lichess-org/lila): cburnett (Colin M.L. Burnett, GPLv2+), merida (Armando Hernandez Marroquin, GPLv2+), chessnut (Alexis Luengas, Apache-2.0), spatial and fantasy (Maurizio Monge, MIT), mpchess (Maxime Chupin, GPLv3+)
 - Piece-square tables from PeSTO by Ronald Friederich
 
 ## License
